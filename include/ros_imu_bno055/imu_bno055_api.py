@@ -76,6 +76,11 @@ RESPONSE_ERROR = 0x0C
 # System configuration
 SYS_TRIGGER = 0x3F
 RST_SYS = 0x20
+CLK_SEL = 0x80
+SYS_CLK_STATUS = 0x38
+INTERNAL_OSCILLATOR = 0x00
+EXTERNAL_OSCILLATOR = 0x01
+
 
 # Power configuration (section 3.2)
 PWR_MODE = 0x3E                         # Set power mode
@@ -441,7 +446,7 @@ class BoschIMU:
         #    - NDOF_FMC_OFF
         #    - NDOF (recommended for robotics)
 
-        self.set_imu_operation_mode(operation_mode = NDOF_FMC_OFF) 
+        self.set_imu_operation_mode(operation_mode = IMU) 
 
 
     def reset_imu(self):
@@ -471,7 +476,6 @@ class BoschIMU:
 
         return status 
 
- 
 
     def get_imu_id(self):
 
@@ -606,6 +610,34 @@ class BoschIMU:
 
         return status
 
+    def set_oscillator(self, oscillator_type):
+
+        status = -1
+        
+        # Ask if clock configuration is available
+        response_clk, status_clk = self.read_imu(SYS_CLK_STATUS, 1)
+
+        if status_clk == RESPONSE_OK:
+
+            main_clock_status = response_clk[2] 
+
+            # If clock is available, set the oscillator
+            if main_clock_status == 0:                
+
+                    #Set oscillator type into the IMU
+                    response, status = self.write_imu(SYS_TRIGGER, oscillator_type) 
+            
+            else:
+                status = RESPONSE_ERROR
+                self._print("Main clock not available")
+        else:
+            status = RESPONSE_ERROR
+        
+        
+
+        return  status
+        
+
     def get_calibration(self):
 
         self.enable_imu_configuration()
@@ -657,6 +689,19 @@ class BoschIMU:
 
         self.set_imu_operation_mode(operation_mode)
         
+        response, status = self.get_calibration_status()
+
+        if status == RESPONSE_OK:
+            calibration_status = response
+
+
+        return calibration_status, status
+
+
+    def get_calibration_status(self):
+
+        calibration_status = []
+        
         response, status = self.read_imu(CALIB_STAT, CALIB_STAT_LENGHT)
 
         if status == RESPONSE_OK:
@@ -669,13 +714,14 @@ class BoschIMU:
             calibration_status = [system_calibration_status, gyroscope_calibration_status,
                                   accelerometer_calibration_status, magnetometer_calibration_status]
 
+
             #print(bin(system_calibration_status))
             #print(bin(gyroscope_calibration_status))
             #print(bin(accelerometer_calibration_status))
             #print(bin(magnetometer_calibration_status))
 
-
         return calibration_status, status
+
 
     def update_imu_data(self):
 
