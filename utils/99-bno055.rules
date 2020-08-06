@@ -1,0 +1,9 @@
+
+# Udev rule for Serial to USB converter with FTID FT232R chip for communication 
+# with IMU BNO055
+#
+# Check dev info: udevadm info -a -p  $(udevadm info -q path -n /dev/ttyUSB0)
+# Reload udev: sudo udevadm control --reload-rules & udevadm trigger
+#
+
+ACTION=="add", ATTRS{product}=="FT232R USB UART", ATTRS{manufacturer}=="FTDI", SYMLINK+="ttyUSB_IMU"
