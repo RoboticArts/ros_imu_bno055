@@ -126,8 +126,8 @@ $ roslaunch ros_imu_bno055 imu.launch serial_port:=/dev/ttyUSB0
 3. The IMU BNO055 implements a sensory fusion algorithm based on the accelerometer, gyroscope and magnetometer to obtain orientation. These sensory fusion modes are:
 
 | Operation mode | Description |
-| ------ | ------ | ------ |
-| IMU | The relative orientation of the BNO055 in space is calculated from the accelerometer and gyroscope data. 
+| ------ | ------ |
+| IMU | The relative orientation of the BNO055 in space is calculated from the accelerometer and gyroscope data. |
 | COMPASS | This mode is intended to measure the magnetic earth field and calculate the geographic direction. The heading  can only be calculated when considering gravity and magnetic field at the same time  |
 | M4G | Similar to the IMU mode, but instead of using the gyroscope signal to detect rotation, the changing orientation of the magnetometer in the magnetic field is used. |
 | NDOF_FMC_OFF | This fusion mode is same as NDOF mode, but with the Fast Magnetometer Calibration turned ‘OFF’.  |
