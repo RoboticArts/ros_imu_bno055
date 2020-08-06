@@ -3,7 +3,7 @@
     
     <arg name="serial_port" default="/dev/ttyUSB0" />
     <arg name="frame_id" default="imu_link" />
-    <arg name="operation_mode" default="NDOF_FMC_OFF"/>
+    <arg name="operation_mode" default="IMU"/>
     <arg name="reset_orientation" default="true" />
     <arg name="frequency" default="50" /> 
     <arg name="use_magnetometer" default="false" />
@@ -21,6 +21,6 @@
         <param name="use_temperature" value="$(arg use_temperature)" />    
     </node>
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ros_imu_bno055)/rviz/view_imu_rviz.rviz" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find ros_imu_bno055)/utils/view_imu_rviz.rviz" />
 
 </launch>
