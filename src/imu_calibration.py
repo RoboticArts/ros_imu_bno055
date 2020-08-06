@@ -64,11 +64,12 @@ class CalibrationIMU:
         # Create an IMU instance
         self.bno055 = BoschIMU(port = self.serial_port)
 
-    
+        self.calibration_full_counter = 0
+
     def get_ros_params(self):
 
         self.serial_port = rospy.get_param(self.node_name + '/serial_port','/dev/ttyUSB0')
-        self.operation_mode_str = rospy.get_param(self.node_name + '/operation_mode', 'NDOF_FMC_OFF')
+        self.operation_mode_str = rospy.get_param(self.node_name + '/operation_mode', 'IMU')
 
         switcher = {
 
@@ -79,7 +80,7 @@ class CalibrationIMU:
             'NDOF': NDOF,
         }
 
-        self.operation_mode = switcher.get(self.operation_mode_str, 'NDOF_FMC_OFF')
+        self.operation_mode = switcher.get(self.operation_mode_str, 'IMU')
 
 
     def init_calibration(self):
@@ -103,16 +104,47 @@ class CalibrationIMU:
             accelerometer_calibration_status = calibration_status[2]
             magnetometer_calibration_status = calibration_status[3]
             
-            print("[System: " + str(system_calibration_status) + "]", end = '')
-            print(" [Gyroscope: " + str(gyroscope_calibration_status) + "]", end = '' ) 
-            print(" [Accelerometer: " + str(accelerometer_calibration_status) + "]", end = '')
-            print(" [Magnetometer: " + str(magnetometer_calibration_status) + "]" )
 
-            if (system_calibration_status == 3 and gyroscope_calibration_status == 3
-            and accelerometer_calibration_status == 3 and magnetometer_calibration_status == 3) :
+            # Calibration for NDOF_FMC_OFF and NDOF             
+            if self.operation_mode == NDOF_FMC_OFF or self.operation_mode == NDOF:
+
+                print("[System: " + str(system_calibration_status) + "]", end = '')
+                print(" [Gyroscope: " + str(gyroscope_calibration_status) + "]", end = '' ) 
+                print(" [Accelerometer: " + str(accelerometer_calibration_status) + "]", end = '')
+                print(" [Magnetometer: " + str(magnetometer_calibration_status) + "]" )
+
+                if (system_calibration_status == 3 and gyroscope_calibration_status == 3
+                and accelerometer_calibration_status == 3 and magnetometer_calibration_status == 3) :
+
+                    self.calibration_full_counter+=1
+
+
+            # Calibration for IMU
+            if self.operation_mode == IMU:
+
+                print(" [Gyroscope: " + str(gyroscope_calibration_status) + "]", end = '' ) 
+                print(" [Accelerometer: " + str(accelerometer_calibration_status) + "]")
+
+                if (gyroscope_calibration_status == 3 and accelerometer_calibration_status == 3) :
+                    self.calibration_full_counter+=1
+            
+
+            # Calibration for COMPASS  and M4G
+            if self.operation_mode == COMPASS or self.operation_mode == M4G:
+                
+                print(" [Accelerometer: " + str(accelerometer_calibration_status) + "]", end = '')
+                print(" [Magnetometer: " + str(magnetometer_calibration_status) + "]" )
+
+                if(accelerometer_calibration_status == 3 and magnetometer_calibration_status == 3) :
+                    self.calibration_full_counter+=1
+
+
+            # When the calibration is FULL three consecutive times, the calibration is assumed to be good
+            if self.calibration_full_counter >= 3:
 
                 is_imu_calibrated = FULL_CALIBRATION
                 rospy.loginfo("IMU successfully calibrated!")
+
 
             time.sleep(1)
 
@@ -137,7 +169,7 @@ class CalibrationIMU:
 
 
         status = self.bno055.set_calibration(calibration)
-
+    
         if status == RESPONSE_OK:
             rospy.loginfo("Calibration successfully written to the IMU")
             self.save_calibration_in_file(calibration)
@@ -153,7 +185,7 @@ class CalibrationIMU:
 
         try: 
 
-            binary_file = open(str(dir_path) + "/calibration", "wb")
+            binary_file = open(str(dir_path) + "/" + str(self.operation_mode_str) + "_calibration", "wb")
             binary_file.write(calibration)
             binary_file.close()
 
