@@ -45,6 +45,7 @@ from sensor_msgs.msg import Imu
 from sensor_msgs.msg import Temperature
 from sensor_msgs.msg import MagneticField
 from std_srvs.srv import Empty, EmptyResponse
+from std_srvs.srv import Trigger, TriggerResponse 
 
 # rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 base_link imu_link 1000
 
@@ -68,7 +69,7 @@ class SensorIMU:
         self.imu_data_seq_counter = 0
         self.imu_magnetometer_seq_counter = 0
         self.imu_temperature_seq_counter = 0
-        self.reset_request = False
+        self.stop_request = False
 
         # Create topics
         self.pub_imu_data = rospy.Publisher('imu/data', Imu, queue_size=1)
@@ -81,7 +82,9 @@ class SensorIMU:
 
 
         # Create service
-        self.reset_imu_orientation = rospy.Service('imu/reset_orientation', Empty, self.callback_reset_imu_orientation)
+        self.reset_imu_device = rospy.Service('imu/reset_device', Empty, self.callback_reset_imu_device)
+        self.calibration_imu_staus = rospy.Service('imu/calibration_status', Trigger, self.callback_calibration_imu_status)
+        
 
         # Print node status
         rospy.loginfo(self.node_name + " already!")
@@ -91,7 +94,8 @@ class SensorIMU:
 
         self.serial_port = rospy.get_param(self.node_name + '/serial_port','/dev/ttyUSB0')
         self.frame_id = rospy.get_param(self.node_name + '/frame_id', 'imu_link')
-        self.operation_mode_str = rospy.get_param(self.node_name + '/operation_mode', 'NDOF_FMC_OFF')
+        self.operation_mode_str = rospy.get_param(self.node_name + '/operation_mode', 'IMU')
+        self.oscillator_str = rospy.get_param(self.node_name + '/oscillator', 'INTERNAL')
         self.reset_orientation = rospy.get_param(self.node_name + '/reset_orientation', True)
         self.frequency = rospy.get_param(self.node_name + '/frequency', 20)
         self.use_magnetometer = rospy.get_param(self.node_name + '/use_magnetometer', False)
@@ -106,7 +110,16 @@ class SensorIMU:
             'NDOF': NDOF,
         }
 
-        self.operation_mode = switcher.get(self.operation_mode_str, 'NDOF_FMC_OFF')
+        self.operation_mode = switcher.get(self.operation_mode_str, 'IMU')
+
+        switcher = {
+
+            'EXTERNAL': EXTERNAL_OSCILLATOR,
+            'INTERNAL': INTERNAL_OSCILLATOR 
+        }
+        
+        self.oscillator = switcher.get(self.oscillator_str, 'INTERNAL')
+
 
     def set_imu_configuration(self):
 
@@ -120,7 +133,7 @@ class SensorIMU:
         else:
             rospy.logerr("Unable to activate configuration mode")
 
-
+        
         # Set IMU units
         status_2 = self.bno055.set_imu_units( acceleration_units = METERS_PER_SECOND,   # Linear acceleration units
                                             angular_velocity_units = RAD_PER_SECOND,  # Anguar velocity units  
@@ -150,6 +163,15 @@ class SensorIMU:
             rospy.loginfo("Calibration loaded successfully")
         else:
             rospy.loginfo("Calibration not detected. IMU will use default calibration")
+
+        
+        status_oscillator = self.bno055.set_oscillator(oscillator_type = self.oscillator)
+        
+        if status_oscillator == RESPONSE_OK:
+                rospy.loginfo("%s oscillator configured successfully", self.oscillator_str)
+
+        else:
+            rospy.loginfo("Unable to configure oscillator")
 
 
         # Set operation mode. Exit configuration mode and activate IMU to work
@@ -188,7 +210,7 @@ class SensorIMU:
 
         # Read calibration from file
         try:
-            binary_file = open(str(dir_path) + "/calibration", "rb")
+            binary_file = open(str(dir_path) + "/" + self.operation_mode_str + "_calibration", "rb")
             calibration_data = binary_file.read()
             binary_file.close()
             calibration_exists = True
@@ -206,17 +228,46 @@ class SensorIMU:
         return status
     
 
-    def callback_reset_imu_orientation(self, req):
+    def callback_reset_imu_device(self, req):
         
-        rospy.loginfo("Reseting orientation...")
-        self.reset_request = True
+        rospy.loginfo("====================")
+        rospy.loginfo("Service: Reseting IMU...")
+        self.stop_request = True
         rospy.sleep(1)
         self.reset_imu()
         self.set_imu_configuration()
-        self.reset_request = False
-        rospy.loginfo("Orientation reset!")
+        self.stop_request = False
+        rospy.loginfo("Service: IMU reset completed!")
 
         result = EmptyResponse()
+        return result
+
+
+    def callback_calibration_imu_status(self, req):
+
+        self.stop_request = True
+        # Delay proportional to the frequency of the node
+        time.sleep(1/self.frequency)
+        calibration_status, status = self.bno055.get_calibration_status()
+        self.stop_request = False
+
+        result = TriggerResponse()
+
+        if status == RESPONSE_OK:
+            
+            sys = " [System: " + str(calibration_status[0]) + "]"
+            gyr = " [Gyroscope: " + str(calibration_status[1]) + "]"
+            acc = " [Accelerometer: " + str(calibration_status[2]) + "]"
+            mag = " [Magnetometer: " + str(calibration_status[3]) + "]" 
+
+            result.message = sys + gyr + acc + mag
+            result.success = True
+
+        else:
+            rospy.logwarn("Unable to read IMU calibration")
+            result.message = "Unable to read IMU calibration"
+            result.success = False
+
         return result
 
     def publish_imu_data(self):
@@ -301,7 +352,7 @@ class SensorIMU:
 
         while not rospy.is_shutdown():
 
-            if self.reset_request == False:
+            if self.stop_request == False:
                 
                 #start_time = time.time()
                 self.bno055.update_imu_data()
