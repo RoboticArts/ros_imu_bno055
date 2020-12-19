@@ -87,7 +87,7 @@ class SensorIMU:
         
 
         # Print node status
-        rospy.loginfo(self.node_name + " already!")
+        rospy.loginfo(self.node_name + " ready!")
 
 
     def get_ros_params(self):
