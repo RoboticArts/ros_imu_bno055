@@ -1,13 +1,13 @@
 # ros_imu_bno055
 
 
-**Autor**: Robert Vasquez Zavaleta
+**Author**: Robert Vasquez Zavaleta
 
 *Robotic Arts, All Rights Reserved 2020*
 
 Software License Agreement (BSD License)
 
-**Description**: ROS driver for the BNO055 IMU using serial communication. Also allows configuration and calibration of the IMU
+**Description**: ROS driver for the BNO055 IMU using serial communication. Also it allows the configuration and calibration of the IMU
 
 ## Overview
 
@@ -49,9 +49,10 @@ If you are using a different board, for example the Adafruit board or a differen
 
 ## 3. Dependences
 
-ros_imu_bno055 package depends on the following python packages:
+ros_imu_bno055 package depends on the following python/ros packages:
 
 * pyserial
+* rviz_imu_plugin
 
 ## 4. Installation
 
@@ -70,11 +71,22 @@ $ catkin_make --only-pkg-with-deps ros_imu_bno055
 $ source devel/setup.bash
 ```
 
-Finally pyserial must be installed if it is not on the computer. This dependency is normally included in the standard ROS installation
+By default the standard ROS installation does not include any plugin to display the orientation of the IMUs in rviz. Therefore, you will need to install the **Imu plugin**. If you does not need to see the IMU in rviz you can skip this step.
+
+Kinetic:
+```
+$ sudo apt-get install ros-kinetic-rviz-imu-plugin
+```
+Melodic:
+```
+$ sudo apt-get install ros-melodic-rviz-imu-plugin
+```
+
+Finally pyserial must be installed if it is not on the computer. 
 
 ```
- pip install pyserial
- ```
+$ pip install pyserial
+```
 
 (Optional) If you are using a Serial to USB converter with the **original FTDI chip** you can install the udev rule to identify the device as ```ttyUSB_IMU```
 
