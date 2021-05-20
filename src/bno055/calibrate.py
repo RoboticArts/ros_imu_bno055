@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 Copyright (c) 2020 Robotic Arts Industries
 
@@ -40,14 +38,11 @@ Author:  Robert Vasquez Zavaleta
 
 
 import rospy
-from ros_imu_bno055.imu_bno055_api import * 
+from bno055 import bno055, registers
 import time
 import os
 
-NOT_CALIBRATED = 0x00
-FULL_CALIBRATION = 0x01
-
-class CalibrationIMU:
+class BNO055Calibrate:
 
     def __init__(self):
 
@@ -236,19 +231,3 @@ class CalibrationIMU:
 
                 rospy.loginfo("Calibration has finished successfully. Closing node...")
                 rospy.signal_shutdown("")
-
-
-
-if __name__ == '__main__':
-
-    imu_calibration = CalibrationIMU()
-
-    try:
-        
-        imu_calibration.run()
-        
-        # Uncomment to read the calibration data from the binary file 'calibration'. Comment run().
-        #imu_calibration.read_calibration_from_file()
-
-    except rospy.ROSInterruptException:
-        pass

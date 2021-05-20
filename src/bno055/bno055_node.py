@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 """
 Copyright (c) 2020 Robotic Arts Industries
@@ -37,24 +36,24 @@ POSSIBILITY OF SUCH DAMAGE.
 Author:  Robert Vasquez Zavaleta
 
 """
-
 import rospy
 import os
-from ros_imu_bno055.imu_bno055_api import * 
+from bno055.bno055 import BNO055
+from bno055.registers import *
+
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import Temperature
 from sensor_msgs.msg import MagneticField
 from std_srvs.srv import Empty, EmptyResponse
 from std_srvs.srv import Trigger, TriggerResponse 
 
-# rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 base_link imu_link 1000
 
-class SensorIMU:
+class BNO055Node:
 
     def __init__(self):
 
         # Init node
-        rospy.init_node('ros_imu_bno055_node', anonymous=False)
+        rospy.init_node('bno055_node', anonymous=False)
 
         # Get node name
         self.node_name = rospy.get_name()
@@ -63,7 +62,7 @@ class SensorIMU:
         self.get_ros_params()
 
         # Create an IMU instance
-        self.bno055 = BoschIMU(port = self.serial_port)
+        self.bno055 = BNO055(port = self.serial_port)
 
         # Internal variables
         self.imu_data_seq_counter = 0
@@ -370,15 +369,3 @@ class SensorIMU:
                     self.publish_imu_temperature()
 
             rate.sleep()
-
-
-if __name__ == '__main__':
-
-    imu = SensorIMU()
-
-    try:
-        imu.run()
-
-    except rospy.ROSInterruptException:
-        pass
-
