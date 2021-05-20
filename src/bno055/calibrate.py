@@ -38,7 +38,8 @@ Author:  Robert Vasquez Zavaleta
 
 
 import rospy
-from bno055 import bno055, registers
+from bno055.bno055 import BNO055
+from bno055.registers import *
 import time
 import os
 
@@ -57,7 +58,7 @@ class BNO055Calibrate:
         self.get_ros_params()
 
         # Create an IMU instance
-        self.bno055 = BoschIMU(port = self.serial_port)
+        self.bno055 = BNO055(port = self.serial_port)
 
         self.calibration_full_counter = 0
 

@@ -22,7 +22,7 @@ include_directories(
 )
 
 catkin_install_python(
-  PROGRAMS nodes/bno055_main.py
+  PROGRAMS nodes/bno055_main.py nodes/bno055_calibrate.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

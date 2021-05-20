@@ -38,19 +38,14 @@ Author:  Robert Vasquez Zavaleta
 
 """
 import rospy
-from bno055 import calibrate
+from bno055.calibrate import BNO055Calibrate
 
 
 if __name__ == '__main__':
-
-    imu_calibration = CalibrateBNO055()
-
+    imu_calibration = BNO055Calibrate()
     try:
-        
         imu_calibration.run()
-        
         # Uncomment to read the calibration data from the binary file 'calibration'. Comment run().
         #imu_calibration.read_calibration_from_file()
-
     except rospy.ROSInterruptException:
         pass

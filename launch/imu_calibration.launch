@@ -1,6 +1,6 @@
 <?xml version="1.0"?> 
 <launch>
-    <arg name="node_name" default"bno055" />
+    <arg name="node_name" default="bno055" />
     <arg name="serial_port" default="/dev/ttyUSB0" />
     <arg name="operation_mode" default="IMU" />
 
