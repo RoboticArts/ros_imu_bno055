@@ -620,11 +620,15 @@ class BNO055:
           raw_quaternion_z * raw_quaternion_z +
           raw_quaternion_w * raw_quaternion_w)
 
+        if(norm == 0):
+          # set norm to 1 if 0
+          norm = 1
+
         quaternion_w = raw_quaternion_w / norm
         quaternion_x = raw_quaternion_x / norm
         quaternion_y = raw_quaternion_y / norm
         quaternion_z = raw_quaternion_z / norm
-     
+    
         # print (quaternion_w)
         # print (quaternion_x)
         # print (quaternion_y)
