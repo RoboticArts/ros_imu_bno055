@@ -3,12 +3,12 @@
 
     <arg name="serial_port" default="/dev/ttyUSB0" />
     <arg name="frame_id" default="bno055_trunk" />
-    <arg name="operation_mode" default="IMU"/>
+    <arg name="operation_mode" default="NDOF"/>
     <arg name="oscillator" default="INTERNAL" />
     <arg name="reset_orientation" default="true" />
-    <arg name="frequency" default="50" /> 
-    <arg name="use_magnetometer" default="false" />
-    <arg name="use_temperature" default="false" /> 
+    <arg name="frequency" default="100" /> 
+    <arg name="use_magnetometer" default="true" />
+    <arg name="use_temperature" default="true" /> 
 
 
     <node pkg="bno055" type="bno055_main.py" name="$(arg frame_id)" output="screen">

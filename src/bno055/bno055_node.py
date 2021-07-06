@@ -272,7 +272,7 @@ class BNO055Node:
     def publish_imu_data(self):
             
         imu_data = Imu()  
-        
+
         quaternion = self.bno055.get_quaternion_orientation()
         linear_acceleration = self.bno055.get_linear_acceleration()
         gyroscope = self.bno055.get_gyroscope()
@@ -355,7 +355,6 @@ class BNO055Node:
                 
                 #start_time = time.time()
                 self.bno055.update_imu_data()
-                #print("--- %s seconds ---" % (time.time() - start_time)) 
 
                 # Publish imu data
                 self.publish_imu_data()

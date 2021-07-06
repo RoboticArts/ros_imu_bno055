@@ -42,6 +42,7 @@ from bno055.registers import *
 
 import serial #pyserial
 import math
+from math import sqrt
 import time
 import sys, os
 
@@ -612,16 +613,22 @@ class BNO055:
         raw_quaternion_y = int.from_bytes(response[4:6], 'little',  signed= True) 
         raw_quaternion_z = int.from_bytes(response[6:8], 'little',  signed= True) 
         
-        # No conversion needed
-        quaternion_w = raw_quaternion_w
-        quaternion_x = raw_quaternion_x
-        quaternion_y = raw_quaternion_y
-        quaternion_z = raw_quaternion_z
+        # Normalize quaternion
+        norm = sqrt(
+          raw_quaternion_x * raw_quaternion_x +
+          raw_quaternion_y * raw_quaternion_y +
+          raw_quaternion_z * raw_quaternion_z +
+          raw_quaternion_w * raw_quaternion_w)
+
+        quaternion_w = raw_quaternion_w / norm
+        quaternion_x = raw_quaternion_x / norm
+        quaternion_y = raw_quaternion_y / norm
+        quaternion_z = raw_quaternion_z / norm
      
-        #self._print (raw_quaternion_w)
-        #self._print (raw_quaternion_x)
-        #self._print (raw_quaternion_y)
-        #self._print (raw_quaternion_z)
+        # print (quaternion_w)
+        # print (quaternion_x)
+        # print (quaternion_y)
+        # print (quaternion_z)
 
         return quaternion_w, quaternion_x, quaternion_y, quaternion_z
 
@@ -653,9 +660,9 @@ class BNO055:
             self._print("Error: wrong angle unit, you can use: RAD or DEG ")
             return 
         
-        #self._print (euler_x)
-        #self._print (euler_y)
-        #self._print (euler_z)
+        # print (euler_x)
+        # print (euler_y)
+        # print (euler_z)
 
         return euler_x, euler_y, euler_z
 
