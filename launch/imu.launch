@@ -10,7 +10,7 @@
     <arg name="use_magnetometer" default="false" />
     <arg name="use_temperature" default="false" />
 
-    < />
+    <!-- < /> -->
     <node pkg="ros_imu_bno055" type="imu_ros.py" name="ros_imu_bno055_node" output="screen">
         <param name="serial_port" value="$(arg serial_port)" />
         <param name="frame_id" value="$(arg frame_id)" />
@@ -21,5 +21,6 @@
         <param name="use_magnetometer" value="$(arg use_magnetometer)" />
         <param name="use_temperature" value="$(arg use_temperature)" />
     </node>
+    <!-- ali -->
 
 </launch>
